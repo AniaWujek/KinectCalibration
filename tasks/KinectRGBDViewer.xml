@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Task>
+	<Subtasks>
+		<Subtask name="Processing">
+			<Executor name="Exec1"  period="0.1">
+				<Component name="Source" type="CameraNUI:CameraNUI" priority="1" bump="0">
+					<param name="sync">1</param>
+				</Component>
+
+				<Component name="FindChessboard" type="CvBasic:CvFindChessboardCorners" priority="2">
+                    <param name="prop_width"></param>
+                    <param name="prop_height"></param>
+                    <param name="prop_square_width"></param>
+                    <param name="prop_square_height"></param>
+				</Component>
+
+				<Component name="SolvePnP" type="CvBasic:CvSolvePnP" priority="3">
+				</Component>
+
+			</Executor>
+		</Subtask>
+
+		<Subtask name="Visualization">
+			<Executor name="Exec2" period="0.1">
+				<Component name="Window" type="CvBasic:CvWindow" priority="1" bump="0">
+					<param name="count">1</param>
+					<param name="title">RGB</param>
+				</Component>
+			</Executor>
+		</Subtask>
+	</Subtasks>
+
+	<!-- pipes connecting datastreams -->
+	<DataStreams>
+		<Source name="Source.out_img">
+			<sink>Window.in_img0</sink>
+			<sink>FindChessboard.in_img</sink>
+		</Source>
+		<Source name="Source.out_camera_info">
+            <sink>SolvePnP.in_camera_info</sink>
+		</Source>
+		<Source name="FindChessboard.out_chessboard">
+            <sink>SolvePnP.in_object3d</sink>
+		</Source>
+	</DataStreams>
+</Task>
+
+
+
+

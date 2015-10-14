@@ -1,0 +1,11 @@
+/build
+/build*
+/dist
+.settings
+.project
+.cproject
+/data/*/
+*~
+/data
+/tasks/core
+
