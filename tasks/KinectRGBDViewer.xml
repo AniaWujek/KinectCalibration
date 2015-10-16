@@ -6,15 +6,29 @@
 				<Component name="Source" type="CameraNUI:CameraNUI" priority="1" bump="0">
 					<param name="sync">1</param>
 				</Component>
-
-				<Component name="FindChessboard" type="CvBasic:CvFindChessboardCorners" priority="2">
-                    <param name="prop_width"></param>
-                    <param name="prop_height"></param>
-                    <param name="prop_square_width"></param>
-                    <param name="prop_square_height"></param>
+				
+				<Component name="ColorConv" type="CvBasic:CvColorConv" priority="2">
+					<param name="type">CV_RGB2GRAY</param>
 				</Component>
 
-				<Component name="SolvePnP" type="CvBasic:CvSolvePnP" priority="3">
+				<Component name="FindChessboard" type="CvBasic:CvFindChessboardCorners" priority="3">
+                    <param name="chessboard.board_width">5</param>
+                    <param name="chessboard.board_height">6</param>
+                    <param name="chessboard.square_width">0.04</param>
+                    <param name="chessboard.square_height">0.04</param>
+				</Component>
+
+				<Component name="SolvePnP" type="CvBasic:CvSolvePnP" priority="4">
+				</Component>
+				
+				<Component name="DrawSystem" type="CvBasic:DrawCoordinateSystem" priority="5">
+				</Component>
+				
+				<Component name="KinectCalib" type="KinectCalibration:KinectCalibration" priority="6">
+					<param name="chessboard_height">6</param>
+					<param name="chessboard_width">5</param>
+					<param name="square_width">0.04</param>
+					<param name="square_height">0.04</param>
 				</Component>
 
 			</Executor>
@@ -23,8 +37,8 @@
 		<Subtask name="Visualization">
 			<Executor name="Exec2" period="0.1">
 				<Component name="Window" type="CvBasic:CvWindow" priority="1" bump="0">
-					<param name="count">1</param>
-					<param name="title">RGB</param>
+					<param name="count">3</param>
+					<param name="title">uklad,szachownica, calib</param>
 				</Component>
 			</Executor>
 		</Subtask>
@@ -34,13 +48,32 @@
 	<DataStreams>
 		<Source name="Source.out_img">
 			<sink>Window.in_img0</sink>
+			<sink>ColorConv.in_img</sink>
+			<sink>KinectCalib.in_img</sink>
+		</Source>
+		<Source name="ColorConv.out_img">
 			<sink>FindChessboard.in_img</sink>
 		</Source>
 		<Source name="Source.out_camera_info">
             <sink>SolvePnP.in_camera_info</sink>
+            <sink>DrawSystem.in_camera_matrix</sink>
 		</Source>
 		<Source name="FindChessboard.out_chessboard">
             <sink>SolvePnP.in_object3d</sink>
+            <sink>KinectCalib.in_chessboard</sink>
+		</Source>
+		<Source name="SolvePnP.out_homogMatrix">
+			<sink>DrawSystem.in_homogMatrix</sink>
+			<sink>KinectCalib.in_homogMatrix</sink>
+		</Source>
+		<Source name="DrawSystem.out_csystem">
+			<sink>Window.in_draw</sink>
+		</Source>
+		<Source name="FindChessboard.out_img">
+			<sink>Window.in_img1</sink>
+		</Source>
+		<Source name="KinectCalib.out_img">
+			<sink>Window.in_img2</sink>
 		</Source>
 	</DataStreams>
 </Task>

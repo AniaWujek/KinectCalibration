@@ -17,10 +17,14 @@ namespace KinectCalibration {
 
 KinectCalibration::KinectCalibration(const std::string & name) :
 		Base::Component(name) ,
-		chessboard_height("chessboard_height", 0),
-		chessboard_width("chessboard_width", 0) {
+		chessboard_height("chessboard_height", 5),
+		chessboard_width("chessboard_width", 6),
+		square_width("square_width", 0.04),
+		square_height("square_height", 0.04) {
 	registerProperty(chessboard_height);
 	registerProperty(chessboard_width);
+	registerProperty(square_width);
+	registerProperty(square_height);
 
 }
 
@@ -36,7 +40,7 @@ void KinectCalibration::prepareInterface() {
 	// Register handlers
 	registerHandler("KinectCalibration_Processor", boost::bind(&KinectCalibration::KinectCalibration_Processor, this));
 	addDependency("KinectCalibration_Processor", &in_homogMatrix);
-	addDependency("KinectCalibration_Processor", &in_img);
+	//addDependency("KinectCalibration_Processor", &in_img);
 	addDependency("KinectCalibration_Processor", &in_chessboard);
 
 }
@@ -59,6 +63,40 @@ bool KinectCalibration::onStart() {
 }
 
 void KinectCalibration::KinectCalibration_Processor() {
+
+    Types::Objects3D::Chessboard chessboard = in_chessboard.read();
+    cv::Mat img = in_img.read().clone();
+    cv::Mat image(img.rows, img.cols, CV_8UC3, cv::Scalar::all(0));
+    std::vector <cv::Point2f> corners = chessboard.getImagePoints();
+
+    Types::HomogMatrix in_matrix = in_homogMatrix.read();
+    cv::Mat_<double> matrix;
+    matrix.create(4,4);
+    for (int i = 0; i < 4; ++i) {
+			for (int j = 0; j < 4; ++j) {
+                matrix(i,j)=in_matrix(i, j);
+			}
+		}
+
+
+
+
+
+    for(int i = 0; i < chessboard_height; ++i )
+        for(int j = 0; j < chessboard_width; ++j) {
+            cv::circle(image, corners[i*chessboard_width+j],1,cv::Scalar(0,255,0),-1,8,0);
+            if((i == 0 && j == 0) || (i == chessboard_height-1 && j == chessboard_width-1)) {
+                cv::Mat point = (cv::Mat_<double>(4,1) << corners[i*chessboard_width+j].x, corners[i*chessboard_width+j].y, 0, 1);
+                cv::Mat_<double> chess_point = matrix * point;
+                std::ostringstream ss;
+                ss << chess_point(2,0);
+                std::string s(ss.str());
+                cv::putText(image,s,corners[i*chessboard_width+j], cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255), 1, 8, false);
+            }
+
+        }
+    out_img.write(image);
+
 }
 
 

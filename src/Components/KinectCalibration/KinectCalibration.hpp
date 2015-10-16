@@ -82,6 +82,8 @@ protected:
 	// Properties
 	Base::Property<int> chessboard_height;
 	Base::Property<int> chessboard_width;
+	Base::Property<int> square_width;
+	Base::Property<int> square_height;
 
 
 	// Handlers
