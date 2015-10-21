@@ -34,13 +34,15 @@ KinectCalibration::~KinectCalibration() {
 void KinectCalibration::prepareInterface() {
 	// Register data streams, events and event handlers HERE!
 	registerStream("in_img", &in_img);
+	registerStream("in_depth", &in_depth);
 	registerStream("in_homogMatrix", &in_homogMatrix);
 	registerStream("in_chessboard", &in_chessboard);
 	registerStream("out_img", &out_img);
 	// Register handlers
 	registerHandler("KinectCalibration_Processor", boost::bind(&KinectCalibration::KinectCalibration_Processor, this));
 	addDependency("KinectCalibration_Processor", &in_homogMatrix);
-	//addDependency("KinectCalibration_Processor", &in_img);
+	addDependency("KinectCalibration_Processor", &in_img);
+	addDependency("KinectCalibration_Processor", &in_depth);
 	addDependency("KinectCalibration_Processor", &in_chessboard);
 
 }
@@ -66,8 +68,10 @@ void KinectCalibration::KinectCalibration_Processor() {
 
     Types::Objects3D::Chessboard chessboard = in_chessboard.read();
     cv::Mat img = in_img.read().clone();
+    cv::Mat depth = in_depth.read().clone();
     cv::Mat image(img.rows, img.cols, CV_8UC3, cv::Scalar::all(0));
-    std::vector <cv::Point2f> corners = chessboard.getImagePoints();
+    std::vector <cv::Point2f> imageCorners = chessboard.getImagePoints();
+    std::vector <cv::Point3f> modelCorners = chessboard.getModelPoints();
 
     Types::HomogMatrix in_matrix = in_homogMatrix.read();
     cv::Mat_<double> matrix;
@@ -81,20 +85,29 @@ void KinectCalibration::KinectCalibration_Processor() {
 
 
 
+    /*for (int i = 0; i < imageCorners.size(); ++i) {
+        std::cout << imageCorners[i] << std::endl;
+        cv::circle(image, imageCorners[i], 1, cv::Scalar(0,255,0), -1, 8, 0);
+    }*/
+
 
     for(int i = 0; i < chessboard_height; ++i )
         for(int j = 0; j < chessboard_width; ++j) {
-            cv::circle(image, corners[i*chessboard_width+j],1,cv::Scalar(0,255,0),-1,8,0);
-            if((i == 0 && j == 0) || (i == chessboard_height-1 && j == chessboard_width-1)) {
-                cv::Mat point = (cv::Mat_<double>(4,1) << corners[i*chessboard_width+j].x, corners[i*chessboard_width+j].y, 0, 1);
+            cv::circle(image, imageCorners[i*chessboard_width+j],1,cv::Scalar(0,255,0),-1,8,0);
+            if((i == 2 && j == 2) || (i == chessboard_height-3 && j == chessboard_width-3)) {
+                cv::Mat point = (cv::Mat_<double>(4,1) << modelCorners[i*chessboard_width+j].x, modelCorners[i*chessboard_width+j].y, modelCorners[i*chessboard_width+j].z, 1);
                 cv::Mat_<double> chess_point = matrix * point;
                 std::ostringstream ss;
                 ss << chess_point(2,0);
                 std::string s(ss.str());
-                cv::putText(image,s,corners[i*chessboard_width+j], cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255), 1, 8, false);
+                std::ostringstream ss2;
+                ss2 << depth.at<int>(imageCorners[i*chessboard_width+j].x,imageCorners[i*chessboard_width+j].y);
+                std::string s2(ss2.str());
+                cv::putText(image,s2,imageCorners[i*chessboard_width+j], cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255), 1, 8, false);
             }
 
         }
+
     out_img.write(image);
 
 }

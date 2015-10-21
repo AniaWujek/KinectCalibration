@@ -70,7 +70,8 @@ protected:
 
 
 	// Input data streams
-	Base::DataStreamIn<cv::Mat> in_img;
+	Base::DataStreamIn<cv::Mat, Base::DataStreamBuffer::Newest> in_img;
+	Base::DataStreamIn<cv::Mat, Base::DataStreamBuffer::Newest> in_depth;
 	Base::DataStreamIn<Types::HomogMatrix> in_homogMatrix;
 	Base::DataStreamIn<Types::Objects3D::Chessboard> in_chessboard;
 
