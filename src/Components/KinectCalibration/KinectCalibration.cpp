@@ -94,16 +94,22 @@ void KinectCalibration::KinectCalibration_Processor() {
     for(int i = 0; i < chessboard_height; ++i )
         for(int j = 0; j < chessboard_width; ++j) {
             cv::circle(image, imageCorners[i*chessboard_width+j],1,cv::Scalar(0,255,0),-1,8,0);
-            if((i == 2 && j == 2) || (i == chessboard_height-3 && j == chessboard_width-3)) {
+            if((i == 0 && j == 0) || (i == chessboard_height-1 && j == chessboard_width-1) || (i == chessboard_height-1 && j == 0) || (i == 0 && j == chessboard_width-1)) {
                 cv::Mat point = (cv::Mat_<double>(4,1) << modelCorners[i*chessboard_width+j].x, modelCorners[i*chessboard_width+j].y, modelCorners[i*chessboard_width+j].z, 1);
                 cv::Mat_<double> chess_point = matrix * point;
                 std::ostringstream ss;
-                ss << chess_point(2,0);
+                ss << (int)(chess_point(2,0)*1000);
                 std::string s(ss.str());
                 std::ostringstream ss2;
-                ss2 << depth.at<int>(imageCorners[i*chessboard_width+j].x,imageCorners[i*chessboard_width+j].y);
+
+                //cv::Mat_<cv::Vec3b> dpth = depth.clone();
+                std::cout<< depth.at<unsigned short>(imageCorners[i*chessboard_width+j].y,imageCorners[i*chessboard_width+j].x) << std::endl;
+                //std::cout<<dpth(imageCorners[i*chessboard_width+j].x,imageCorners[i*chessboard_width+j].y)<<std::endl;
+
+                ss2 << depth.at<unsigned short>(imageCorners[i*chessboard_width+j].y,imageCorners[i*chessboard_width+j].x);
                 std::string s2(ss2.str());
-                cv::putText(image,s2,imageCorners[i*chessboard_width+j], cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar::all(255), 1, 8, false);
+                cv::putText(image,s,imageCorners[i*chessboard_width+j], cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar::all(255), 1, 8, false);
+                cv::putText(image,s2,cv::Point(imageCorners[i*chessboard_width+j].x,imageCorners[i*chessboard_width+j].y+30), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255,0,255), 1, 8, false);
             }
 
         }

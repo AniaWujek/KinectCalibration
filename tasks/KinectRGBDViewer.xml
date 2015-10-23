@@ -6,14 +6,23 @@
 				<Component name="Source" type="CameraNUI:CameraNUI" priority="1" bump="0">
 					<param name="sync">1</param>
 				</Component>
-				
+
+				<Component name="CameraInfo" type="CvCoreTypes:CameraInfoProvider" priority="2">
+					<param name="width">640</param>
+					<param name="height">480</param>
+					<param name="camera_matrix">521.865359 0.000000 331.944041;0.000000 519.571213 266.688293;0.000000 0.000000 1.000000</param>
+					<param name="dist_coeffs">0.177579 -0.298755 0.007296 0.001088 0.000000</param>
+					<!--<param name="rectificaton_matrix">1.000000 0.000000 0.000000;0.000000 1.000000 0.000000;0.000000 0.000000 1.000000</param>
+					<param name="projection_matrix">539.002258 0.000000 322.560057 0.000000;0.000000 535.019775 258.896458 0.000000;0.000000 0.000000 1.000000 0.000000</param>-->
+				</Component>
+
 				<Component name="ProcNorm" type="CameraNUI:DepthConverter" priority="2" bump="0">
 					<param name="depth_mode">normalized</param>
 				</Component>
-				
+
 				<Component name="GaussianBlur" type="CvBasic:CvGaussianBlur" priority="3">
 				</Component>
-				
+
 				<Component name="ColorConv" type="CvBasic:CvColorConv" priority="4">
 					<param name="type">CV_RGB2GRAY</param>
 				</Component>
@@ -21,16 +30,16 @@
 				<Component name="FindChessboard" type="CvBasic:CvFindChessboardCorners" priority="5">
                     <param name="chessboard.board_width">5</param>
                     <param name="chessboard.board_height">6</param>
-                    <param name="chessboard.square_width">0.04</param>
-                    <param name="chessboard.square_height">0.04</param>
+                    <param name="chessboard.square_width">0.03</param>
+                    <param name="chessboard.square_height">0.03</param>
 				</Component>
 
 				<Component name="SolvePnP" type="CvBasic:CvSolvePnP" priority="6">
 				</Component>
-				
+
 				<Component name="DrawSystem" type="CvBasic:DrawCoordinateSystem" priority="7">
 				</Component>
-				
+
 				<Component name="KinectCalib" type="KinectCalibration:KinectCalibration" priority="8">
 					<param name="chessboard_height">6</param>
 					<param name="chessboard_width">5</param>
@@ -61,18 +70,19 @@
 		<!--<Source name="GaussianBlur.out_img">
 			<sink>FindChessboard.in_img</sink>
 		</Source>-->
-		
+
 		<Source name="Source.out_depth">
 			<sink>ProcNorm.in_depth</sink>
+			<sink>KinectCalib.in_depth</sink>
 		</Source>
 		<Source name="ProcNorm.out_depth">
-			<sink>Window.in_img3</sink>	
-			<sink>KinectCalib.in_depth</sink>	
+			<sink>Window.in_img3</sink>
+
 		</Source>
 		<Source name="ColorConv.out_img">
 			<sink>FindChessboard.in_img</sink>
 		</Source>
-		<Source name="Source.out_camera_info">
+		<Source name="CameraInfo.out_camera_info">
             <sink>SolvePnP.in_camera_info</sink>
             <sink>DrawSystem.in_camera_matrix</sink>
 		</Source>
